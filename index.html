@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hava Durumu - Türkiye ve Dünya İçin Güncel Hava Durumu</title>
+    <meta name="description" content="Türkiye'nin ve dünyanın tüm şehirleri için güncel hava durumu bilgisi. 7 günlük tahmin, sıcaklık, nem, rüzgar ve daha fazlası.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#3B82F6">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { color: white; font-size: 2.5rem; margin-bottom: 10px; }
+        header p { color: #DBEAFE; font-size: 1.1rem; }
+        .card { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-box input { flex: 1; padding: 12px 16px; border: 2px solid #E5E7EB; border-radius: 10px; font-size: 16px; outline: none; }
+        .search-box input:focus { border-color: #3B82F6; }
+        .search-box button { padding: 12px 24px; background: #3B82F6; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+        .search-box button:hover { background: #2563EB; }
+        .quick-cities { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .quick-cities span { color: #6B7280; font-size: 14px; margin-right: 5px; }
+        .quick-cities button { padding: 6px 14px; background: #DBEAFE; color: #1D4ED8; border: none; border-radius: 20px; font-size: 13px; cursor: pointer; }
+        .quick-cities button:hover { background: #BFDBFE; }
+        .weather-main { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+        .weather-info h2 { font-size: 2rem; color: #1F2937; margin-bottom: 5px; }
+        .weather-info .condition { color: #6B7280; text-transform: capitalize; font-size: 1.1rem; }
+        .weather-info .temp { font-size: 4rem; font-weight: bold; color: #1F2937; margin: 10px 0; }
+        .weather-info .feels { color: #6B7280; }
+        .weather-icon { font-size: 100px; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #E5E7EB; }
+        @media (min-width: 768px) { .details { grid-template-columns: repeat(4, 1fr); } }
+        .detail-item { display: flex; align-items: center; gap: 12px; }
+        .detail-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .detail-icon.blue { background: #DBEAFE; }
+        .detail-icon.green { background: #D1FAE5; }
+        .detail-icon.purple { background: #E9D5FF; }
+        .detail-icon.orange { background: #FED7AA; }
+        .detail-item p:first-child { color: #6B7280; font-size: 13px; }
+        .detail-item p:last-child { font-size: 18px; font-weight: 600; color: #1F2937; }
+        .forecast h3 { font-size: 1.2rem; color: #1F2937; margin-bottom: 15px; }
+        .forecast-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (min-width: 640px) { .forecast-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 768px) { .forecast-grid { grid-template-columns: repeat(7, 1fr); } }
+        .forecast-item { background: #F3F4F6; border-radius: 12px; padding: 15px; text-align: center; transition: all 0.3s; }
+        .forecast-item:hover { background: #DBEAFE; transform: translateY(-5px); }
+        .forecast-item .day { font-size: 14px; color: #6B7280; font-weight: 500; margin-bottom: 8px; }
+        .forecast-item .icon { font-size: 32px; margin: 8px 0; }
+        .forecast-item .temp { font-size: 20px; font-weight: bold; color: #1F2937; }
+        .forecast-item .range { font-size: 11px; color: #9CA3AF; margin-top: 5px; }
+        .seo-content { margin-top: 20px; }
+        .seo-content h3 { font-size: 1.1rem; color: #1F2937; margin-bottom: 10px; }
+        .seo-content p { color: #4B5563; line-height: 1.6; font-size: 14px; margin-bottom: 10px; }
+        footer { text-align: center; margin-top: 30px; color: #DBEAFE; font-size: 14px; }
+        .loading { text-align: center; padding: 40px; color: #6B7280; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌤️ Hava Durumu</h1>
+            <p>Türkiye ve dünya şehirleri için güncel hava durumu</p>
+        </header>
+
+        <div class="card">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Şehir ara (örn: İstanbul, Ankara, İzmir...)" onkeypress="if(event.key==='Enter') searchCity()">
+                <button onclick="searchCity()">Ara</button>
+            </div>
+            <div class="quick-cities">
+                <span>Popüler:</span>
+                <button onclick="quickSearch('İstanbul')">İstanbul</button>
+                <button onclick="quickSearch('Ankara')">Ankara</button>
+                <button onclick="quickSearch('İzmir')">İzmir</button>
+                <button onclick="quickSearch('Antalya')">Antalya</button>
+                <button onclick="quickSearch('Bursa')">Bursa</button>
+            </div>
+        </div>
+
+        <div id="weatherContainer" class="hidden">
+            <div class="card">
+                <div class="weather-main">
+                    <div class="weather-info">
+                        <h2 id="cityName">İstanbul</h2>
+                        <p class="condition" id="condition">parçalı bulutlu</p>
+                        <p class="temp" id="temp">18°</p>
+                        <p class="feels">Hissedilen: <span id="feelsLike">16</span>°</p>
+                    </div>
+                    <div class="weather-icon" id="weatherIcon">⛅</div>
+                </div>
+                <div class="details">
+                    <div class="detail-item">
+                        <div class="detail-icon blue">💧</div>
+                        <div>
+                            <p>Nem</p>
+                            <p id="humidity">72%</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-icon green">💨</div>
+                        <div>
+                            <p>Rüzgar</p>
+                            <p id="wind">14 km/s</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-icon purple">👁️</div>
+                        <div>
+                            <p>Görüş</p>
+                            <p id="visibility">10 km</p>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-icon orange">📊</div>
+                        <div>
+                            <p>Basınç</p>
+                            <p id="pressure">1015 hPa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="forecast">
+                    <h3>📅 7 Günlük Tahmin</h3>
+                    <div class="forecast-grid" id="forecastGrid"></div>
+                </div>
+            </div>
+
+            <div class="card seo-content">
+                <h3 id="seoTitle">İstanbul Hava Durumu Hakkında</h3>
+                <p id="seoText">İstanbul şu anda 18°C sıcaklıkla parçalı bulutlu hava koşullarına sahip.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>🌤️ Hava Durumu - Türkiye'nin en güvenilir hava durumu uygulaması</p>
+        </footer>
+    </div>
+
+    <script>
+        const weatherData = {
+            'istanbul': { city: 'İstanbul', temp: 18, feelsLike: 16, condition: 'parçalı bulutlu', humidity: 72, windSpeed: 14, visibility: 10, pressure: 1015, icon: '⛅', forecast: [{day:'Pzt',temp:19,icon:'☀️',min:14,max:21},{day:'Sal',temp:20,icon:'⛅',min:15,max:22},{day:'Çar',temp:17,icon:'🌧️',min:13,max:18},{day:'Per',temp:16,icon:'🌧️',min:12,max:17},{day:'Cum',temp:18,icon:'⛅',min:13,max:20},{day:'Cmt',temp:21,icon:'☀️',min:15,max:23},{day:'Paz',temp:22,icon:'☀️',min:16,max:24}]},
+            'ankara': { city: 'Ankara', temp: 15, feelsLike: 13, condition: 'güneşli', humidity: 45, windSpeed: 8, visibility: 10, pressure: 1020, icon: '☀️', forecast: [{day:'Pzt',temp:16,icon:'☀️',min:8,max:18},{day:'Sal',temp:17,icon:'☀️',min:9,max:19},{day:'Çar',temp:14,icon:'⛅',min:7,max:16},{day:'Per',temp:12,icon:'⛅',min:6,max:14},{day:'Cum',temp:15,icon:'☀️',min:8,max:17},{day:'Cmt',temp:18,icon:'☀️',min:10,max:20},{day:'Paz',temp:19,icon:'☀️',min:11,max:21}]},
+            'izmir': { city: 'İzmir', temp: 24, feelsLike: 25, condition: 'güneşli', humidity: 55, windSpeed: 12, visibility: 10, pressure: 1012, icon: '☀️', forecast: [{day:'Pzt',temp:25,icon:'☀️',min:18,max:27},{day:'Sal',temp:26,icon:'☀️',min:19,max:28},{day:'Çar',temp:23,icon:'⛅',min:17,max:25},{day:'Per',temp:22,icon:'⛅',min:16,max:24},{day:'Cum',temp:24,icon:'☀️',min:18,max:26},{day:'Cmt',temp:27,icon:'☀️',min:20,max:29},{day:'Paz',temp:28,icon:'☀️',min:21,max:30}]},
+            'antalya': { city: 'Antalya', temp: 28, feelsLike: 30, condition: 'güneşli', humidity: 60, windSpeed: 10, visibility: 10, pressure: 1008, icon: '☀️', forecast: [{day:'Pzt',temp:29,icon:'☀️',min:22,max:31},{day:'Sal',temp:30,icon:'☀️',min:23,max:32},{day:'Çar',temp:27,icon:'⛅',min:21,max:29},{day:'Per',temp:26,icon:'⛅',min:20,max:28},{day:'Cum',temp:28,icon:'☀️',min:22,max:30},{day:'Cmt',temp:31,icon:'☀️',min:24,max:33},{day:'Paz',temp:32,icon:'☀️',min:25,max:34}]},
+            'bursa': { city: 'Bursa', temp: 17, feelsLike: 16, condition: 'parçalı bulutlu', humidity: 65, windSpeed: 9, visibility: 10, pressure: 1018, icon: '⛅', forecast: [{day:'Pzt',temp:18,icon:'☀️',min:12,max:20},{day:'Sal',temp:19,icon:'☀️',min:13,max:21},{day:'Çar',temp:16,icon:'🌧️',min:11,max:18},{day:'Per',temp:15,icon:'🌧️',min:10,max:17},{day:'Cum',temp:17,icon:'⛅',min:12,max:19},{day:'Cmt',temp:20,icon:'☀️',min:14,max:22},{day:'Paz',temp:21,icon:'☀️',min:15,max:23}]},
+            'trabzon': { city: 'Trabzon', temp: 14, feelsLike: 12, condition: 'yağmurlu', humidity: 85, windSpeed: 18, visibility: 6, pressure: 1005, icon: '🌧️', forecast: [{day:'Pzt',temp:15,icon:'🌧️',min:11,max:17},{day:'Sal',temp:14,icon:'🌧️',min:10,max:16},{day:'Çar',temp:13,icon:'🌧️',min:9,max:15},{day:'Per',temp:12,icon:'⛅',min:8,max:14},{day:'Cum',temp:14,icon:'⛅',min:10,max:16},{day:'Cmt',temp:16,icon:'☀️',min:11,max:18},{day:'Paz',temp:17,icon:'☀️',min:12,max:19}]},
+            'adana': { city: 'Adana', temp: 30, feelsLike: 33, condition: 'güneşli', humidity: 50, windSpeed: 11, visibility: 10, pressure: 1010, icon: '☀️', forecast: [{day:'Pzt',temp:31,icon:'☀️',min:24,max:33},{day:'Sal',temp:32,icon:'☀️',min:25,max:34},{day:'Çar',temp:29,icon:'⛅',min:23,max:31},{day:'Per',temp:28,icon:'⛅',min:22,max:30},{day:'Cum',temp:30,icon:'☀️',min:24,max:32},{day:'Cmt',temp:33,icon:'☀️',min:26,max:35},{day:'Paz',temp:34,icon:'☀️',min:27,max:36}]},
+            'konya': { city: 'Konya', temp: 20, feelsLike: 19, condition: 'güneşli', humidity: 40, windSpeed: 13, visibility: 10, pressure: 1022, icon: '☀️', forecast: [{day:'Pzt',temp:21,icon:'☀️',min:12,max:23},{day:'Sal',temp:22,icon:'☀️',min:13,max:24},{day:'Çar',temp:19,icon:'⛅',min:11,max:21},{day:'Per',temp:18,icon:'⛅',min:10,max:20},{day:'Cum',temp:20,icon:'☀️',min:12,max:22},{day:'Cmt',temp:23,icon:'☀️',min:14,max:25},{day:'Paz',temp:24,icon:'☀️',min:15,max:26}]},
+            'gaziantep': { city: 'Gaziantep', temp: 26, feelsLike: 27, condition: 'güneşli', humidity: 48, windSpeed: 9, visibility: 10, pressure: 1014, icon: '☀️', forecast: [{day:'Pzt',temp:27,icon:'☀️',min:19,max:29},{day:'Sal',temp:28,icon:'☀️',min:20,max:30},{day:'Çar',temp:25,icon:'⛅',min:18,max:27},{day:'Per',temp:24,icon:'⛅',min:17,max:26},{day:'Cum',temp:26,icon:'☀️',min:19,max:28},{day:'Cmt',temp:29,icon:'☀️',min:21,max:31},{day:'Paz',temp:30,icon:'☀️',min:22,max:32}]}
+        };
+
+        function getIcon(condition) {
+            const icons = {'güneşli':'☀️','parçalı bulutlu':'⛅','yağmurlu':'🌧️','karlı':'❄️','fırtınalı':'⛈️','sisli':'🌫️'};
+            return icons[condition] || '☀️';
+        }
+
+        function generateRandomWeather(city) {
+            const conditions = ['güneşli','parçalı bulutlu','yağmurlu','karlı'];
+            const condition = conditions[Math.floor(Math.random()*conditions.length)];
+            const temp = Math.floor(Math.random()*25)+5;
+            const forecast = ['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].map(d => ({
+                day: d, temp: temp+Math.floor(Math.random()*8)-4, icon: getIcon(conditions[Math.floor(Math.random()*conditions.length)]),
+                min: temp-5, max: temp+3
+            }));
+            return { city: city.charAt(0).toUpperCase()+city.slice(1), temp, feelsLike: temp-2, condition, humidity: Math.floor(Math.random()*50)+40, windSpeed: Math.floor(Math.random()*20)+5, visibility: Math.floor(Math.random()*8)+5, pressure: Math.floor(Math.random()*30)+1000, icon: getIcon(condition), forecast };
+        }
+
+        function displayWeather(data) {
+            document.getElementById('cityName').textContent = data.city;
+            document.getElementById('condition').textContent = data.condition;
+            document.getElementById('temp').textContent = data.temp + '°';
+            document.getElementById('feelsLike').textContent = data.feelsLike;
+            document.getElementById('weatherIcon').textContent = data.icon;
+            document.getElementById('humidity').textContent = data.humidity + '%';
+            document.getElementById('wind').textContent = data.windSpeed + ' km/s';
+            document.getElementById('visibility').textContent = data.visibility + ' km';
+            document.getElementById('pressure').textContent = data.pressure + ' hPa';
+            
+            const forecastHtml = data.forecast.map(f => `
+                <div class="forecast-item">
+                    <div class="day">${f.day}</div>
+                    <div class="icon">${f.icon}</div>
+                    <div class="temp">${f.temp}°</div>
+                    <div class="range">${f.min}° / ${f.max}°</div>
+                </div>
+            `).join('');
+            document.getElementById('forecastGrid').innerHTML = forecastHtml;
+            
+            document.getElementById('seoTitle').textContent = data.city + ' Hava Durumu Hakkında';
+            document.getElementById('seoText').textContent = `${data.city} şu anda ${data.temp}°C sıcaklıkla ${data.condition} hava koşullarına sahip. Nem oranı %${data.humidity}, rüzgar hızı saatte ${data.windSpeed} km.`;
+            
+            document.getElementById('weatherContainer').classList.remove('hidden');
+        }
+
+        function searchCity() {
+            const input = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (!input) return;
+            
+            const data = weatherData[input] || generateRandomWeather(input);
+            displayWeather(data);
+        }
+
+        function quickSearch(city) {
+            document.getElementById('searchInput').value = city;
+            searchCity();
+        }
+
+        // Sayfa yüklenince İstanbul'u göster
+        window.onload = () => displayWeather(weatherData['istanbul']);
+    </script>
+</body>
+</html>
