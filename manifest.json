@@ -1,0 +1,17 @@
+{
+  "name": "Hava Durumu",
+  "short_name": "Hava",
+  "description": "Türkiye ve Dünya için Güncel Hava Durumu",
+  "start_url": "/Hava-durumu/",
+  "display": "standalone",
+  "background_color": "#1D4ED8",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://openweathermap.org/img/wn/01d@2x.png",
+      "sizes": "100x100",
+      "type": "image/png"
+    }
+  ]
+}
